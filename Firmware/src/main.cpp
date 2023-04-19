@@ -8,13 +8,17 @@
 #define rightTurnKeywords 'd'
 #define leftTurnKeywords 'a'
 #define forwardTurnKeywords 'w'
-#define backwardTurnKeywords 's'
+#define backwardTurnKeywords 'x'
+#define fullyActuationKeywords 'c'
+#define fullyCompressedKeywords 'z'
 String outputMessage = "----------------------------------------------------------------\n"
                        "Controls for the Finger:\n"
                        "w -> Move Forward\n"
                        "a -> Move Left\n"
-                       "s -> Move Backwards\n"
+                       "x -> Move Backwards\n"
                        "d -> Move Right\n"
+                       "z -> Full Extended Actuation\n"
+                       "c -> Fully Compressed Actuation\n"
                        "----------------------------------------------------------------";
 
 class pump {
@@ -35,11 +39,13 @@ public:
     }
 
     void activate () const {
+        // Air from Port 1 -> Port 2; Port 3 Blocked
         digitalWrite (this->pinNumberForPump, HIGH);
         Serial.println(this->pumpName + " Activated");
     }
 
     void deactivate () const {
+        // Air from Port 1 -> Port 3; Port 2 Blocked
         digitalWrite (this->pinNumberForPump, LOW);
         Serial.println(this->pumpName + " Deactivated");
     }
@@ -55,12 +61,12 @@ pump rightBendPump ("Right Pump",PUMP_4);
 #pragma endregion PinConnections
 
 #pragma region FunctionDeclaration
-
 void moveFingerRight ();
 void moveFingerLeft ();
 void moveFingerForward ();
 void moveFingerBackward ();
-
+void moveFingerFullyExtended ();
+void moveFingerFullyCompressed ();
 #pragma endregion FunctionDeclaration
 
 
@@ -101,6 +107,14 @@ void loop () {
                 Serial.println ("Turn Backwards");
                 moveFingerBackward ();
                 break;
+            case fullyActuationKeywords:
+                Serial.println ("Fully Actuation");
+                moveFingerFullyExtended();
+                break;
+            case fullyCompressedKeywords:
+                Serial.println ("Fully Compressed");
+                moveFingerFullyCompressed();
+                break;
             default:
                 Serial.println ("Input Not Valid!");
                 break;
@@ -131,6 +145,21 @@ void moveFingerForward () {
 void moveFingerBackward () {
     forwardsBendPump.deactivate ();
     backwardsBendPump.activate ();
+}
+
+void  moveFingerFullyCompressed() {
+    forwardsBendPump.deactivate ();
+    backwardsBendPump.deactivate ();
+    leftBendPump.deactivate ();
+    rightBendPump.deactivate ();
+}
+
+void  moveFingerFullyExtended() {
+    moveFingerFullyCompressed();
+    forwardsBendPump.activate();
+    backwardsBendPump.activate ();
+    leftBendPump.activate ();
+    rightBendPump.activate ();
 }
 
 #pragma endregion CustomMethods
